@@ -34,7 +34,7 @@ int main() {
             case 3:
                 cout << "Usted ha elegido salir del programa." << endl;
                 interaction = 0;
-                abort();
+                exit(0);
                 break;
             default:
                 cout << "Opción no válida. Por favor, intentelo nuevamente." << endl;
