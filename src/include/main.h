@@ -129,8 +129,39 @@ Libro cargarDatos() {
     return libroCargado;
 }
 
+void cantLibrosGenero(NodoLibro* vector[]){
+
+   int i, contador=0, contadorMayorCant=0,generoMasLibros;
+
+   for(i=0;i<20;i++){
+
+      NodoLibro* aux=vector[i];
+
+      while(aux!=NULL){
+        contador++;
+        aux=aux->sig;
+      }
+
+      cout << "El genero " << i+1 << " tiene " << contador << " libros." << endl;
+
+      if(contadorMayorCant==0 || contadorMayorCant<contador){
+
+         contadorMayorCant=contador;
+         generoMasLibros=i+1;
+      }
+
+      contador=0;
+   }
+
+   cout << "El genero " << generoMasLibros << " tiene la mayor cantidad de libros." << endl;
+}
+
 void mostrarDatos() {
-   inicializarVector(); // llamada a inicializar vector
+    inicializarVector(); // llamada a inicializar vector
+
+    cout << "Se han registrado un total de " << cantidadLibros << " libros." << endl;
+
+    cantLibrosGenero(vectorGeneros);
 }
 
 #endif
