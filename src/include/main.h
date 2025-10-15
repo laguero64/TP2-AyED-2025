@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <string.h>
 #include <map>
 #define CANT_GENEROS 20
 
@@ -49,32 +50,38 @@ NodoLibro* insertarOrdenado(NodoLibro*& puntero,Libro registro) {
     return puntero;
 }
 
-void cargaVector(NodoLibro* vectorGeneros[]){ //Se abre el archivo y se recorre
+void cargaVector(NodoLibro* vectorGeneros[]){ 
    int codGenero;
-
    FILE* archivoLibros = fopen("libros.dat","rb");
 
    if(archivoLibros == NULL){
-      cout << "No se pudo abrir el archivo." << endl;
+      cout << "No se pudo abrir el archivo libros.dat." << endl;
       return;
    }
 
    Libro registro;
+   int leidos = 0;
 
    while(fread(&registro,sizeof(Libro),1,archivoLibros)==1) {
       codGenero=registro.codigoGenero-1;
-      vectorGeneros[codGenero] = insertarOrdenado(vectorGeneros[codGenero],registro); // se llama a la funcion para insertar
+      if (codGenero >= 0 && codGenero < CANT_GENEROS)
+         vectorGeneros[codGenero] = insertarOrdenado(vectorGeneros[codGenero],registro);
+      leidos++;
    }
    
    fclose(archivoLibros);
+
+   if (leidos == 0)
+       cout << "El archivo esta vacio, no hay libros cargados." << endl;
+   else
+       cout << "Se cargaron " << leidos << " libros desde el archivo." << endl;
 }
 
-void inicializarVector() { // funcion para inicializar el vector
+void inicializarVector(NodoLibro* vectorGeneros[]) { // funcion para inicializar el vector
    int i;
    for(i=0; i<20; i++){
       vectorGeneros[i] = NULL; // inicializacion de cada posicion del vector como vacias(cabezas de listas)
    }
-   cargaVector(vectorGeneros); // llamada a funcion para comenzar la lectura del archivo y carga del vector
 }
 
 void cargarDatoIndividual(Libro &libroCargado, string parametro) {
@@ -129,39 +136,154 @@ Libro cargarDatos() {
     return libroCargado;
 }
 
-void cantLibrosGenero(NodoLibro* vector[]){
+void cantLibrosGenero(NodoLibro* vector[]) {
 
-   int i, contador=0, contadorMayorCant=0,generoMasLibros;
+   int i, contador = 0, contadorMayorCant = 0, generoMasLibros;
 
-   for(i=0;i<20;i++){
+   for(i = 0; i < 20; i++){
 
       NodoLibro* aux=vector[i];
 
-      while(aux!=NULL){
+      while (aux != NULL) {
         contador++;
         aux=aux->sig;
       }
+      
+      if (contador == 1) {
+        cout << "El género " << i+1 << " tiene " << contador << " libro." << endl;
+      }
+      else {
+        cout << "El género " << i+1 << " tiene " << contador << " libros." << endl;
+      }
 
-      cout << "El genero " << i+1 << " tiene " << contador << " libros." << endl;
-
-      if(contadorMayorCant==0 || contadorMayorCant<contador){
-
-         contadorMayorCant=contador;
-         generoMasLibros=i+1;
+      if(contadorMayorCant == 0 || contadorMayorCant < contador) {
+         contadorMayorCant = contador;
+         generoMasLibros = i + 1;
       }
 
       contador=0;
    }
 
-   cout << "El genero " << generoMasLibros << " tiene la mayor cantidad de libros." << endl;
+   cout << "El género " << generoMasLibros << " tiene la mayor cantidad de libros." << endl;
+}
+
+void autorMasFrecuente(NodoLibro* vector[]) {
+    char autores[50][51]; // Se establece un maximo de 50 autores
+    int contador[50] = {0};
+    int cantAutores = 0;
+    int maxFrecuencia = 0;
+    char autorMasFrecuente[51] = "";
+
+    // Recorrer todas las listas del vector
+    for (int i = 0; i < CANT_GENEROS; i++) {
+        NodoLibro* aux = vector[i];
+
+        while (aux != NULL) {
+            // Comprobar si el autor existe en el array
+            int encontrado = -1;
+            for (int j = 0; j < cantAutores; j++) {
+                if (strcmp(autores[j], aux->libro.autor) == 0){
+                    encontrado = j;
+                    break;
+                }
+            }
+
+            // Si el autor no existe, agregarlo
+            if (encontrado == -1) {
+                strcpy(autores[cantAutores], aux->libro.autor);
+                contador[cantAutores] = 1;
+                cantAutores++;
+            } else {
+                contador[encontrado]++;
+            }
+
+            aux = aux->sig;
+        }
+    }
+
+    // Buscar el autor mas frecuente
+    for (int i = 0; i < cantAutores; i++) {
+        if (contador[i] > maxFrecuencia) {
+            maxFrecuencia = contador[i];
+            strcpy(autorMasFrecuente, autores[i]);
+        }
+    }
+
+    if (maxFrecuencia == 0) {
+        cout << "No hay libros cargados." << endl;
+    } else {
+        cout << "El autor mas frecuente es: " << autorMasFrecuente << " (" << maxFrecuencia << " libros)." << endl;
+    }
+}
+
+void libroMasPaginas(NodoLibro* vector[]) {
+    string tituloMax;
+    int maxPag = -1;
+
+    for (int i = 0; i < CANT_GENEROS; i++) {
+        NodoLibro* aux = vector[i];
+        while (aux != NULL) {
+            if (aux->libro.cantPag > maxPag) {
+                maxPag = aux->libro.cantPag;
+                tituloMax = aux->libro.titulo;
+            }
+
+            aux = aux->sig;
+        }
+    }
+
+    if (maxPag == -1) {
+        cout << "No hay libros cargados." << endl;
+    } else {
+        cout << "El libro con mas paginas es: \"" << tituloMax << "\" con " << maxPag << " paginas." << endl;
+    }
+}
+
+void promedioPaginas(NodoLibro* vector[]) {
+    int totalPaginas = 0, totalLibros = 0;
+
+    for (int i = 0; i < CANT_GENEROS; i++) {
+        NodoLibro* aux = vector[i];
+        
+        while (aux != NULL) {
+            totalPaginas += aux->libro.cantPag;
+            totalLibros++;
+            aux = aux->sig;
+        }
+    }
+
+    if (totalLibros == 0){
+        cout << "No hay libros cargados." << endl;
+    } else {
+        cout << "El promedio de paginas por libros es: " << (float)totalPaginas / totalLibros << endl;
+    }
 }
 
 void mostrarDatos() {
-    inicializarVector(); // llamada a inicializar vector
+   inicializarVector(vectorGeneros); // llamada a inicializar 
+   cargaVector(vectorGeneros); // llamada a funcion para comenzar la lectura del archivo y carga del vector
 
-    cout << "Se han registrado un total de " << cantidadLibros << " libros." << endl;
+   if (cantidadLibros == 0) {
+     cout << "No hay libros cargados." << endl;
+     return;
+   }
 
-    cantLibrosGenero(vectorGeneros);
+   cout << "Resultados: " << endl;
+   cout << "Total de libros registrados: " << cantidadLibros << endl;
+   cantLibrosGenero(vectorGeneros);
+   autorMasFrecuente(vectorGeneros);
+   libroMasPaginas(vectorGeneros);
+   promedioPaginas(vectorGeneros);
+
+   for (int i = 0; i < CANT_GENEROS; i++) { // para evitar memory leaks
+    NodoLibro* aux = vectorGeneros[i];
+    while (aux != NULL) {
+        NodoLibro* temp = aux;
+        aux = aux->sig;
+        delete temp;
+    }
+    vectorGeneros[i] = NULL;
+}
 }
 
 #endif
