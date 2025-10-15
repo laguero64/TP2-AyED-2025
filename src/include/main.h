@@ -150,13 +150,13 @@ void cantLibrosGenero(NodoLibro* vector[]) {
       }
       
       if (contador == 1) {
-        cout << "El género " << i+1 << " tiene " << contador << " libro." << endl;
+        cout << "El genero " << i+1 << " tiene " << contador << " libro." << endl;
       }
       else {
-        cout << "El género " << i+1 << " tiene " << contador << " libros." << endl;
+        cout << "El genero " << i+1 << " tiene " << contador << " libros." << endl;
       }
 
-      if(contadorMayorCant == 0 || contadorMayorCant < contador) {
+      if (contadorMayorCant == 0 || contadorMayorCant < contador) {
          contadorMayorCant = contador;
          generoMasLibros = i + 1;
       }
